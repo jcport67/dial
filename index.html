@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Dial</title>
+<style>
+  :root { --bg:#ffffff; --fg:#111111; --muted:#555555; --btn:#1a7f37; --btn2:#0969da; --line:#d0d7de; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9da7b3; --btn:#238636; --btn2:#1f6feb; --line:#30363d; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:420px; margin:0 auto; padding:24px 16px; text-align:center; }
+  .label { color:var(--muted); font-size:15px; margin-top:20px; }
+  .big { font-size:34px; font-weight:700; letter-spacing:1px; margin:4px 0; word-break:break-all; }
+  a.btn, button { display:block; width:100%; box-sizing:border-box; margin:14px 0; padding:18px; border:0; border-radius:12px;
+                  font-size:20px; font-weight:600; color:#fff; text-decoration:none; cursor:pointer; }
+  .dial { background:var(--btn); } .call { background:var(--btn2); } .copy { background:#6e7781; }
+  .note { color:var(--muted); font-size:14px; margin-top:18px; line-height:1.4; border-top:1px solid var(--line); padding-top:14px; }
+  .err { color:#cf222e; font-size:18px; margin-top:40px; }
+</style>
+</head>
+<body>
+<main id="m"></main>
+<script>
+  var p = new URLSearchParams(location.search);
+  var n = (p.get("n") || "").replace(/[^\d+]/g, "");
+  var c = (p.get("c") || "").replace(/[^\d*#]/g, "");
+  var m = document.getElementById("m");
+  if (n.replace("+", "").length < 7) {
+    m.innerHTML = '<div class="err">No phone number in this link.</div>';
+  } else {
+    if (n[0] !== "+") n = "+" + n;
+    if (c && c.slice(-1) !== "#") c += "#";
+    var nice = n.replace(/^\+1(\d{3})(\d{3})(\d{4})$/, "+1 $1 $2 $3");
+    var h = '<div class="label">Number</div><div class="big">' + nice + '</div>';
+    if (c) h += '<div class="label">Access code</div><div class="big">' + c + '</div>';
+    if (c) h += '<a class="btn dial" href="tel:' + n + ',,' + encodeURIComponent(c) + '">Dial with code (phone)</a>';
+    h += '<a class="btn call" href="tel:' + n + '">Call number only' + (c ? ' (PC)' : '') + '</a>';
+    if (c) h += '<button class="copy" id="cp">Copy access code</button>';
+    if (c) h += '<div class="note">Phone: "Dial with code" enters the code for you after a short pause.<br>PC (Phone Link): use "Call number only", then type the code on the keypad.</div>';
+    m.innerHTML = h;
+    var b = document.getElementById("cp");
+    if (b) b.onclick = function () {
+      navigator.clipboard.writeText(c).then(function () { b.textContent = "Copied"; });
+    };
+  }
+</script>
+</body>
+</html>
